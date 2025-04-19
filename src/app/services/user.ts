@@ -1,7 +1,7 @@
 import * as uuid from "short-uuid";
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/mongodb";
-import { User, UserRole, UserStatus } from "../models/user";
+import { User, UserRole, UserStatus } from "../models/user.schema";
 import { createEmailVerification } from "./verification";
 import { sendResetPasswordEmail } from "../utils/email";
 

@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
-import { EmailVerification } from "../models/emailVerification";
-import { User } from "../models/user";
+import { EmailVerification } from "../models/verification.schema";
+import { User } from "../models/user.schema";
 import { sendVerificationEmail } from "../utils/email";
 
 export const VerificationErrors = {

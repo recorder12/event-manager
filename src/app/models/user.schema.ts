@@ -10,19 +10,26 @@ export enum UserStatus {
   INACTIVE = "INACTIVE",
 }
 
+interface MissedEvent {
+  event: mongoose.Types.ObjectId;
+  date: Date;
+}
+
 export interface UserDocument extends Document {
   email: string;
   password: string;
   first_name: string;
   last_name: string;
-  country_code?: string;
-  phone_number?: string;
   role: UserRole;
   status: UserStatus;
   email_verified?: boolean;
   phone_verified?: boolean;
   profile_picture?: string;
   profile: string;
+  not_applied: MissedEvent[];
+  not_applied_count: number;
+  not_participated: MissedEvent[]; // ❗️이름 추천: `not_participated`
+  not_participated_count: number;
 }
 
 const UserSchema: Schema<UserDocument> = new Schema(
@@ -36,8 +43,6 @@ const UserSchema: Schema<UserDocument> = new Schema(
     },
     first_name: { type: String, required: true },
     last_name: { type: String, required: true },
-    country_code: { type: String }, // without +
-    phone_number: { type: String }, // without dashes
     email_verified: { type: Boolean, default: false },
     phone_verified: { type: Boolean, default: false },
     role: {
@@ -54,6 +59,20 @@ const UserSchema: Schema<UserDocument> = new Schema(
     },
     profile_picture: { type: String },
     profile: { type: String },
+    not_applied: [
+      {
+        event: { type: Schema.Types.ObjectId, ref: "Event" },
+        date: { type: Date, required: true },
+      },
+    ],
+    not_applied_count: { type: Number, default: 0 },
+    not_participated: [
+      {
+        event: { type: Schema.Types.ObjectId, ref: "Event" },
+        date: { type: Date, required: true },
+      },
+    ],
+    not_participated_count: { type: Number, default: 0 },
   },
   { timestamps: true, versionKey: false }
 );

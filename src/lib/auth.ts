@@ -1,6 +1,6 @@
 // src/lib/auth.ts
 import bcrypt from "bcryptjs";
-import { User, UserStatus } from "@/app/models/user";
+import { User, UserStatus } from "@/app/models/user.schema";
 import dbConnect from "./mongodb";
 
 export const AuthErrors = {
