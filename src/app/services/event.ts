@@ -26,6 +26,16 @@ type FindEventsInput = {
   organizationId: string;
 };
 
+type UpdateEventInput = {
+  eventId: string;
+  userId: string;
+  description?: string;
+  location?: string;
+  event_date?: Date;
+  type?: string;
+  visibility?: string;
+};
+
 export async function createEvent({
   userId,
   organizationId,
@@ -138,4 +148,40 @@ export async function findEventById({
   } catch (error) {
     throw error;
   }
+}
+
+export async function updateEvent({
+  eventId,
+  userId,
+  description,
+  location,
+  event_date,
+  type,
+  visibility,
+}: UpdateEventInput): Promise<EventDocument> {
+  await dbConnect();
+
+  const event = await Event.findById(eventId);
+  if (!event) throw new Error("Event not found");
+
+  const organization = await Organization.findById(event.organization);
+  if (!organization) throw new Error("Organization not found");
+
+  const isOwner = organization.owner.toString() === userId;
+  const isAdmin = organization.members.some(
+    (member) => member.user.toString() === userId && member.role === "ADMIN"
+  );
+
+  if (!isOwner && !isAdmin) {
+    throw new Error("User is not authorized to edit this event");
+  }
+
+  if (description) event.description = description;
+  if (location) event.location = location;
+  if (event_date) event.event_date = event_date;
+  if (type) event.type = type as any;
+  if (visibility) event.visibility = visibility as any;
+
+  await event.save();
+  return event;
 }

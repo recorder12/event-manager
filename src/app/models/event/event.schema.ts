@@ -4,6 +4,7 @@ import { ActivityDocument } from "./activity.schema";
 
 export interface EventDocument extends Document {
   organization: mongoose.Types.ObjectId;
+  title: string;
   description: string;
   createdBy: mongoose.Types.ObjectId;
   location: string;
@@ -26,6 +27,7 @@ const EventSchema: Schema<EventDocument> = new Schema(
       ref: "Organization",
       required: true,
     },
+    title: { type: String, required: true },
     description: { type: String, required: true },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
