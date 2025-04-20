@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
-import { createEvent } from "@/app/services/event";
+import { createEvent, findEventsByOrganization } from "@/app/services/event";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,6 +30,29 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("Error creating event:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const organizationId = searchParams.get("organizationId");
+
+    if (!organizationId) {
+      return NextResponse.json(
+        { message: "organizationId required" },
+        { status: 400 }
+      );
+    }
+
+    const events = await findEventsByOrganization({ organizationId });
+    return NextResponse.json({ success: true, data: events }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching events:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }

@@ -1,5 +1,6 @@
 import mongoose, { Model, Schema, Document } from "mongoose";
 import { EventStatus, EventType, EventVisibility } from "./event.enums";
+import { ActivityDocument } from "./activity.schema";
 
 export interface EventDocument extends Document {
   organization: mongoose.Types.ObjectId;
@@ -13,6 +14,7 @@ export interface EventDocument extends Document {
   type: EventType;
   visibility: EventVisibility;
   isDeleted: boolean;
+  activities?: ActivityDocument[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,16 +22,22 @@ export interface EventDocument extends Document {
 const EventSchema: Schema<EventDocument> = new Schema(
   {
     organization: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Organization",
       required: true,
     },
     description: { type: String, required: true },
-    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     location: { type: String, required: true },
     event_date: { type: Date, required: true },
+
     is_closed: { type: Boolean, default: false },
     is_participants_confirmed: { type: Boolean, default: false },
+
     status: {
       type: String,
       enum: Object.values(EventStatus),
@@ -45,6 +53,8 @@ const EventSchema: Schema<EventDocument> = new Schema(
       enum: Object.values(EventVisibility),
       default: EventVisibility.PUBLIC,
     },
+
+    activities: [{ type: mongoose.Schema.Types.ObjectId, ref: "Activity" }],
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false }
