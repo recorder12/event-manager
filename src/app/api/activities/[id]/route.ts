@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { updateActivity, deleteActivity } from "@/app/services/activity";
+import { UserRole } from "@/app/models/user.schema";
 
 export async function PATCH(
   req: NextRequest,
@@ -13,9 +14,13 @@ export async function PATCH(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+    const role = session.user.role as UserRole;
+
     const body = await req.json();
     const updated = await updateActivity({
-      userId: session.user.id,
+      userId,
+      role,
       activityId: params.id,
       ...body,
     });
@@ -36,8 +41,12 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+    const role = session.user.role as UserRole;
+
     await deleteActivity({
-      userId: session.user.id,
+      userId,
+      role,
       activityId: params.id,
     });
 

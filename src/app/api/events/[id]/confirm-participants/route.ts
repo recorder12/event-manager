@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/route";
 import { confirmParticipants } from "@/app/services/event";
+import { UserRole } from "@/app/models/user.schema";
 
 export async function POST(
   req: NextRequest,
@@ -13,8 +14,12 @@ export async function POST(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+    const role = session.user.role as UserRole;
+
     const result = await confirmParticipants({
-      userId: session.user.id,
+      userId,
+      role,
       eventId: params.id,
     });
 

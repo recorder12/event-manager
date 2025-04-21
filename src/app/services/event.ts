@@ -7,7 +7,7 @@ import {
   EventVisibility,
 } from "../models/event";
 import { Organization } from "../models/organization.schema";
-import { User } from "../models/user.schema";
+import { User, UserRole } from "../models/user.schema";
 
 type GetEventInput = {
   id: string;
@@ -15,6 +15,7 @@ type GetEventInput = {
 
 type CreateEventInput = {
   userId: string;
+  role: UserRole;
   organizationId: string;
   description: string;
   location: string;
@@ -30,6 +31,7 @@ type FindEventsInput = {
 type UpdateEventInput = {
   eventId: string;
   userId: string;
+  role: UserRole;
   description?: string;
   location?: string;
   event_date?: Date;
@@ -39,6 +41,7 @@ type UpdateEventInput = {
 
 export async function createEvent({
   userId,
+  role,
   organizationId,
   description,
   location,
@@ -71,12 +74,13 @@ export async function createEvent({
       throw new Error("Organization not found");
     }
 
+    const isSiteAdmin = role === UserRole.ADMIN;
     const isOwner = organization.owner.toString() === userId;
     const isAdmin = organization.members.some(
       (member) => member.user.toString() === userId && member.role === "ADMIN"
     );
 
-    if (!isOwner && !isAdmin) {
+    if (!isSiteAdmin && !isOwner && !isAdmin) {
       throw new Error("User is not authorized to create an event");
     }
 
@@ -103,26 +107,6 @@ export async function findEventsByOrganization({
   return Event.find({ organization: organizationId, isDeleted: false })
     .sort({ event_date: 1 })
     .lean();
-}
-
-export async function findEventWithActivities({
-  id,
-}: GetEventInput): Promise<any> {
-  await dbConnect();
-  const event = await Event.findById(id).lean();
-  if (!event) throw new Error("Event not found");
-
-  const activities = await Activity.find({ event: id }).lean();
-
-  const now = new Date();
-  const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-  const is_closed = new Date(event.event_date) <= twoHoursLater;
-
-  return {
-    ...event,
-    is_closed,
-    activities,
-  };
 }
 
 export async function findEventById({
@@ -153,6 +137,7 @@ export async function findEventById({
 
 export async function updateEvent({
   eventId,
+  role,
   userId,
   description,
   location,
@@ -168,12 +153,13 @@ export async function updateEvent({
   const organization = await Organization.findById(event.organization);
   if (!organization) throw new Error("Organization not found");
 
+  const isSiteAdmin = role === UserRole.ADMIN;
   const isOwner = organization.owner.toString() === userId;
   const isAdmin = organization.members.some(
     (member) => member.user.toString() === userId && member.role === "ADMIN"
   );
 
-  if (!isOwner && !isAdmin) {
+  if (!isSiteAdmin && !isOwner && !isAdmin) {
     throw new Error("User is not authorized to edit this event");
   }
 
@@ -189,9 +175,11 @@ export async function updateEvent({
 
 export async function confirmParticipants({
   userId,
+  role,
   eventId,
 }: {
   userId: string;
+  role: UserRole;
   eventId: string;
 }) {
   await dbConnect();
@@ -202,11 +190,12 @@ export async function confirmParticipants({
   const organization = await Organization.findById(event.organization);
   if (!organization) throw new Error("Organization not found");
 
+  const isSiteAdmin = role === UserRole.ADMIN;
   const isOwner = organization.owner.toString() === userId;
   const isAdmin = organization.members.some(
     (m) => m.user.toString() === userId && m.role === "ADMIN"
   );
-  if (!isOwner && !isAdmin) {
+  if (!isSiteAdmin && !isOwner && !isAdmin) {
     throw new Error("Unauthorized");
   }
 

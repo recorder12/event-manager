@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { createEvent, findEventsByOrganization } from "@/app/services/event";
+import { UserRole } from "@/app/models/user.schema";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,12 +13,14 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = session.user.id;
+    const role = session.user.role as UserRole;
 
     const { organization_id, description, location, event_date } =
       await req.json();
 
     const newEvent = await createEvent({
       userId,
+      role,
       organizationId: organization_id,
       description,
       location,

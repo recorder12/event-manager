@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
 import { SessionStrategy } from "next-auth";
 import { authenticateUser } from "@/lib/auth";
+import { UserRole } from "@/app/models/user.schema";
 
 export const authOptions = {
   providers: [
@@ -41,6 +42,10 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.role = user.role;
+        token.first_name = user.first_name;
+        token.last_name = user.last_name;
+        token.picture = user.image;
       }
       return token;
     },
@@ -54,6 +59,10 @@ export const authOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
+        session.user.role = token.role as UserRole;
+        session.user.first_name = token.first_name as string;
+        session.user.last_name = token.last_name as string;
+        session.user.image = token.picture as string;
       }
       return session;
     },

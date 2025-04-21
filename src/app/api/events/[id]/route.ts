@@ -1,11 +1,8 @@
-import {
-  findEventById,
-  findEventWithActivities,
-  updateEvent,
-} from "@/app/services/event";
+import { findEventById, updateEvent } from "@/app/services/event";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import { UserRole } from "@/app/models/user.schema";
 
 export async function GET(
   req: NextRequest,
@@ -34,12 +31,14 @@ export async function PATCH(
     }
 
     const userId = session.user.id;
+    const role = session.user.role as UserRole;
     const eventId = params.id;
     const body = await req.json();
 
     const updatedEvent = await updateEvent({
       eventId,
       userId,
+      role,
       ...body,
     });
 

@@ -1,9 +1,11 @@
 import dbConnect from "@/lib/mongodb";
 import { Activity, ActivityDocument, Event } from "@/app/models/event";
 import { Organization } from "@/app/models/organization.schema";
+import { UserRole } from "../models/user.schema";
 
 type CreateActivityInput = {
   userId: string;
+  role: UserRole;
   eventId: string;
   title: string;
   description?: string;
@@ -13,6 +15,7 @@ type CreateActivityInput = {
 
 type UpdateActivityInput = {
   userId: string;
+  role: UserRole;
   activityId: string;
   title?: string;
   description?: string;
@@ -22,11 +25,13 @@ type UpdateActivityInput = {
 
 type DeleteActivityInput = {
   userId: string;
+  role: UserRole;
   activityId: string;
 };
 
 export async function createActivity({
   userId,
+  role,
   eventId,
   title,
   description,
@@ -41,11 +46,12 @@ export async function createActivity({
   const organization = await Organization.findById(event.organization);
   if (!organization) throw new Error("Organization not found");
 
+  const isSiteAdmin = role === UserRole.ADMIN;
   const isOwner = organization.owner.toString() === userId;
   const isAdmin = organization.members.some(
     (member) => member.user.toString() === userId && member.role === "ADMIN"
   );
-  if (!isOwner && !isAdmin) {
+  if (!isSiteAdmin! && isOwner && !isAdmin) {
     throw new Error("User is not authorized to add activity");
   }
 
@@ -67,6 +73,7 @@ export async function createActivity({
 
 export async function updateActivity({
   userId,
+  role,
   activityId,
   title,
   description,
@@ -84,11 +91,12 @@ export async function updateActivity({
   const organization = await Organization.findById(event.organization);
   if (!organization) throw new Error("Organization not found");
 
+  const isSiteAdmin = role === UserRole.ADMIN;
   const isOwner = organization.owner.toString() === userId;
   const isAdmin = organization.members.some(
     (member) => member.user.toString() === userId && member.role === "ADMIN"
   );
-  if (!isOwner && !isAdmin) {
+  if (!isSiteAdmin && !isOwner && !isAdmin) {
     throw new Error("User is not authorized to update activity");
   }
 
@@ -103,6 +111,7 @@ export async function updateActivity({
 
 export async function deleteActivity({
   userId,
+  role,
   activityId,
 }: DeleteActivityInput): Promise<void> {
   await dbConnect();
@@ -116,11 +125,12 @@ export async function deleteActivity({
   const organization = await Organization.findById(event.organization);
   if (!organization) throw new Error("Organization not found");
 
+  const isSiteAdmin = role === UserRole.ADMIN;
   const isOwner = organization.owner.toString() === userId;
   const isAdmin = organization.members.some(
     (member) => member.user.toString() === userId && member.role === "ADMIN"
   );
-  if (!isOwner && !isAdmin) {
+  if (!isSiteAdmin && !isOwner && !isAdmin) {
     throw new Error("User is not authorized to delete activity");
   }
 

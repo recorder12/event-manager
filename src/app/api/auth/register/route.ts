@@ -10,7 +10,6 @@ export async function POST(req: NextRequest) {
       password,
       last_name,
       first_name,
-      referenceCode: reference_code,
     });
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: any) {

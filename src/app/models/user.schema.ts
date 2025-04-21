@@ -28,7 +28,7 @@ export interface UserDocument extends Document {
   profile: string;
   not_applied: MissedEvent[];
   not_applied_count: number;
-  not_participated: MissedEvent[]; // ❗️이름 추천: `not_participated`
+  not_participated: MissedEvent[];
   not_participated_count: number;
 }
 

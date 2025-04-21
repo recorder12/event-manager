@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { createActivity } from "@/app/services/activity";
+import { UserRole } from "@/app/models/user.schema";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,11 +12,14 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = session.user.id;
+    const role = session.user.role as UserRole;
+
     const { eventId, title, description, start_time, end_time } =
       await req.json();
 
     const activity = await createActivity({
       userId,
+      role,
       eventId,
       title,
       description,
