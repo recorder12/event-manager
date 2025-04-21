@@ -1,3 +1,98 @@
+"use client";
+
+import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
+
 export default function NavBar() {
-  return;
+  const { data: session } = useSession();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const closeMenu = () => setMenuOpen(false);
+
+  console.log("Session data:", session);
+  console.log("Menu open state:", menuOpen);
+
+  return (
+    <nav className="flex justify-between items-center px-6 py-4 bg-white shadow relative z-50">
+      {/* Left: Logo */}
+      <Link href="/" className="text-xl font-bold text-orange-600">
+        CMNY
+      </Link>
+
+      {/* Right: Account or Auth Buttons */}
+      {session?.user ? (
+        <div className="relative">
+          <button
+            onClick={toggleMenu}
+            className="text-sm font-medium text-gray-700 hover:underline"
+          >
+            Account ▼
+          </button>
+
+          {menuOpen && (
+            <div
+              onMouseLeave={closeMenu}
+              className="absolute right-0 mt-2 w-48 bg-white border shadow rounded z-50"
+            >
+              <Link
+                href="/profile"
+                className="block px-4 py-2 hover:bg-gray-100"
+                onClick={closeMenu}
+              >
+                My Profile
+              </Link>
+              <Link
+                href="/settings"
+                className="block px-4 py-2 hover:bg-gray-100"
+                onClick={closeMenu}
+              >
+                Settings
+              </Link>
+              {session.user.role === "ADMIN" && (
+                <Link
+                  href="/admin/events"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={closeMenu}
+                >
+                  My Events
+                </Link>
+              )}
+              <button
+                onClick={() => {
+                  closeMenu();
+                  signOut();
+                }}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                Log Out
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-x-4 text-sm font-medium">
+          <button
+            onClick={() => {
+              const event = new CustomEvent("open-signin-modal");
+              window.dispatchEvent(event);
+            }}
+            className="hover:underline"
+          >
+            Sign In
+          </button>
+          <button
+            onClick={() => {
+              const event = new CustomEvent("open-signup-modal");
+              window.dispatchEvent(event);
+            }}
+            className="hover:underline"
+          >
+            Sign Up
+          </button>
+        </div>
+      )}
+    </nav>
+  );
 }
