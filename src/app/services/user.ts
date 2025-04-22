@@ -48,7 +48,6 @@ export const SignUpErrors = {
   PASSWORD_LENGTH: "Password must be at least 8 characters",
   EMAIL_EXISTS: "Email already exists",
   EMAIL_PASSWORD_REQUIRED: "Email and password are required",
-  USER_TYPE_REQUIRED: "User type is required",
   NAME_REQUIRED: "First name and last name are required",
   INVALIDE_SECRET_CODE: "Invalid secret code",
   FAIL_TO_CREATE_USER: "Failed to create user",
@@ -56,19 +55,16 @@ export const SignUpErrors = {
 
 export const ResetPasswordErrors = {
   INVALID_EMAIL: "Invalid email",
-  USER_TYPE_REQUIRED: "User type is required",
 };
 
 export const ProfileErrors = {
   INVALID_ID: "Invalid email",
-  USER_TYPE_REQUIRED: "User type is required",
   USER_NOT_FOUND: "User not found",
   USER_INACTIVE: "User is inactive",
 };
 
 export const setNewPasswordErrors = {
   INVALID_ID: "Invalid email",
-  USER_TYPE_REQUIRED: "User type is required",
   USER_NOT_FOUND: "User not found",
   USER_INACTIVE: "User is inactive",
   PASSWORD_REQUIRED: "Password is required",
