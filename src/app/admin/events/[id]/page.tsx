@@ -3,7 +3,8 @@
 import useSWR from "swr";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { DateTime } from "luxon";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -17,34 +18,128 @@ export default function AdminEventDetailPage() {
   );
   const event = data?.data;
 
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    location: "",
+    event_date: "",
+  });
+  const [isModified, setIsModified] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
-  const handleConfirmParticipants = async () => {
-    setConfirming(true);
-    const res = await fetch(`/api/events/${id}/confirm-participants`, {
-      method: "POST",
+  useEffect(() => {
+    if (event) {
+      setForm({
+        title: event.title || "",
+        description: event.description || "",
+        location: event.location || "",
+        event_date: DateTime.fromISO(event.event_date).toFormat(
+          "yyyy-MM-dd'T'HH:mm"
+        ),
+      });
+    }
+  }, [event]);
+
+  useEffect(() => {
+    if (!event) return;
+
+    const isChanged =
+      form.title !== (event.title || "") ||
+      form.description !== (event.description || "") ||
+      form.location !== (event.location || "") ||
+      form.event_date !==
+        DateTime.fromISO(event.event_date).toFormat("yyyy-MM-dd'T'HH:mm");
+
+    setIsModified(isChanged);
+  }, [form, event]);
+
+  const handleInput = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEdit = async () => {
+    setIsSaving(true);
+    const res = await fetch(`/api/events/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: form.title,
+        description: form.description,
+        location: form.location,
+        event_date: DateTime.fromFormat(form.event_date, "yyyy-MM-dd'T'HH:mm", {
+          zone: "America/New_York",
+        })
+          .toUTC()
+          .toISO(),
+      }),
     });
-    setConfirming(false);
 
     if (res.ok) {
-      await mutate(); // SWR 캐시 갱신
-      alert("Participants confirmed");
+      await mutate();
+      setIsModified(false);
+      alert("Event updated");
     } else {
-      alert("Error confirming participants");
+      alert("Failed to update");
     }
+    setIsSaving(false);
   };
 
   if (isLoading) return <div className="p-4">Loading...</div>;
   if (error || !event)
-    return <div className="p-4 text-red-500">Failed to load event</div>;
+    return <div className="p-4 text-red-500">The event is not found</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">{event.description}</h1>
-      <p className="text-gray-600">
-        {new Date(event.event_date).toLocaleString()}
-      </p>
-      <p className="text-gray-500">{event.location}</p>
+    <div className="min-h-screen w-full max-w-4xl mx-auto p-6 space-y-6">
+      <div className="space-y-4">
+        <input
+          type="text"
+          name="title"
+          value={form.title}
+          onChange={handleInput}
+          className="w-full border px-3 py-2 rounded"
+          placeholder="Title"
+        />
+        <textarea
+          name="description"
+          value={form.description}
+          onChange={handleInput}
+          className="w-full border px-3 py-2 rounded min-h-[100px]"
+          placeholder="Description"
+        />
+        <input
+          type="datetime-local"
+          name="event_date"
+          value={form.event_date}
+          onChange={handleInput}
+          className="w-full border px-3 py-2 rounded"
+        />
+        <input
+          type="text"
+          name="location"
+          value={form.location}
+          onChange={handleInput}
+          className="w-full border px-3 py-2 rounded"
+          placeholder="Location"
+        />
+
+        <button
+          onClick={handleEdit}
+          disabled={!isModified || isSaving}
+          className={`mt-2 px-4 py-2 rounded text-white ${
+            isModified
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+        >
+          {isSaving ? "Saving..." : "Edit"}
+        </button>
+      </div>
+
+      <hr className="my-6" />
 
       <div className="flex justify-between items-center mt-4">
         <h2 className="text-xl font-semibold">Activities</h2>
@@ -81,7 +176,19 @@ export default function AdminEventDetailPage() {
 
       {!event.is_participants_confirmed && (
         <button
-          onClick={handleConfirmParticipants}
+          onClick={async () => {
+            setConfirming(true);
+            const res = await fetch(`/api/events/${id}/confirm-participants`, {
+              method: "POST",
+            });
+            setConfirming(false);
+            if (res.ok) {
+              await mutate();
+              alert("Participants confirmed");
+            } else {
+              alert("Error confirming participants");
+            }
+          }}
           disabled={confirming}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-6"
         >

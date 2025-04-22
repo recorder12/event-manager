@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { DateTime } from "luxon";
 
 export default function AdminEventCreatePage() {
   const router = useRouter();
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -14,36 +16,55 @@ export default function AdminEventCreatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const parsed = DateTime.fromFormat(eventDate, "yyyy-MM-dd'T'HH:mm", {
+      zone: "America/New_York",
+    });
+
+    if (!parsed.isValid) {
+      console.error("Invalid event date:", eventDate);
+      alert("Invalid event date format");
+      return;
+    }
+
+    const eventDateInUTC = parsed.toUTC().toISO();
+
     const res = await fetch("/api/events", {
       method: "POST",
       body: JSON.stringify({
+        title,
         description,
         location,
-        event_date: new Date(eventDate).toISOString(),
+        event_date: eventDateInUTC,
         type,
         visibility,
-        // CMNY 조직 고정값: 실제 조직 ID로 교체 필요
         organizationId: "6805ae5681bb9f8d8d58000b",
       }),
     });
 
-    const data = await res.json();
+    const resJson = await res.json();
 
     if (res.ok) {
-      router.push(`/admin/events/${data._id}`);
+      router.push(`/admin/events/${resJson.data._id}`);
     } else {
-      alert(`Failed to create event: ${data.message}`);
+      alert(`Failed to create event: ${resJson.message}`);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6">
+    <div className="min-h-screen max-w-xl mx-auto p-6 mt-12">
       <h1 className="text-2xl font-bold mb-6">Create New Event</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
-          placeholder="Event description"
+          placeholder="Event Title"
           className="w-full border p-2 rounded"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+        <textarea
+          placeholder="Event description"
+          className="w-full border p-3 rounded min-h-[120px] resize-y"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required

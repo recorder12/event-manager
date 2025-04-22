@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import dbConnect from "@/lib/mongodb";
 import {
   Activity,
@@ -17,9 +18,10 @@ type CreateEventInput = {
   userId: string;
   role: UserRole;
   organizationId: string;
+  title: string;
   description: string;
   location: string;
-  event_date: Date;
+  event_date: string;
   type?: string;
   visibility?: string;
 };
@@ -32,17 +34,25 @@ type UpdateEventInput = {
   eventId: string;
   userId: string;
   role: UserRole;
+  title?: string;
   description?: string;
   location?: string;
-  event_date?: Date;
+  event_date?: string;
   type?: string;
   visibility?: string;
+};
+
+type EventDeleteInput = {
+  eventId: string;
+  userId: string;
+  role: UserRole;
 };
 
 export async function createEvent({
   userId,
   role,
   organizationId,
+  title,
   description,
   location,
   event_date,
@@ -86,10 +96,15 @@ export async function createEvent({
 
     const newEvent = await Event.create({
       organization: organizationId,
+      title,
       description,
       createdBy: userId,
       location,
-      event_date,
+      event_date: DateTime.fromISO(event_date as string, {
+        zone: "America/New_York",
+      })
+        .toUTC()
+        .toJSDate(),
       type,
       visibility,
     });
@@ -114,17 +129,22 @@ export async function findEventById({
 }: GetEventInput): Promise<EventDocument> {
   try {
     await dbConnect();
-    const event = await Event.findById(id)
-      .populate({
-        path: "activities",
-      })
-      .lean();
+    const event = await Event.findById(id).populate({
+      path: "activities",
+    });
 
     if (!event) throw new Error("Event not found");
 
-    const now = new Date();
-    const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-    const is_closed = new Date(event.event_date) <= twoHoursLater;
+    // 현재 시각을 New York 타임존 기준으로 가져옴
+    const now = DateTime.now().setZone("America/New_York");
+
+    // 이벤트 시간을 New York 기준으로 해석
+    const eventTime = DateTime.fromJSDate(event.event_date).setZone(
+      "America/New_York"
+    );
+
+    // 현재 시각 기준으로 2시간 이후보다 event가 이르면 closed
+    const is_closed = eventTime <= now.plus({ hours: 2 });
 
     event.is_closed = is_closed;
     await event.save();
@@ -139,6 +159,7 @@ export async function updateEvent({
   eventId,
   role,
   userId,
+  title,
   description,
   location,
   event_date,
@@ -163,13 +184,29 @@ export async function updateEvent({
     throw new Error("User is not authorized to edit this event");
   }
 
+  console.log("title", title);
+
+  if (title) {
+    console.log("title added");
+    event.title = title;
+  }
   if (description) event.description = description;
   if (location) event.location = location;
-  if (event_date) event.event_date = event_date;
+  if (event_date) {
+    event.event_date = DateTime.fromISO(event_date as string, {
+      zone: "America/New_York",
+    })
+      .toUTC()
+      .toJSDate();
+  }
   if (type) event.type = type as any;
   if (visibility) event.visibility = visibility as any;
 
+  console.log(event);
+
   await event.save();
+
+  console.log("afer save, event", event);
   return event;
 }
 
@@ -259,4 +296,28 @@ export async function confirmParticipants({
     absent: event.absent_applicants.length,
     not_applied: notAppliedUsers.length,
   };
+}
+
+export async function deleteEvent({
+  eventId,
+  userId,
+  role,
+}: EventDeleteInput): Promise<EventDocument> {
+  await dbConnect();
+
+  const event = await Event.findById(eventId);
+  if (!event) throw new Error("Event not found");
+  const organization = await Organization.findById(event.organization);
+  if (!organization) throw new Error("Organization not found");
+  const isSiteAdmin = role === UserRole.ADMIN;
+  const isOwner = organization.owner.toString() === userId;
+  const isAdmin = organization.members.some(
+    (member) => member.user.toString() === userId && member.role === "ADMIN"
+  );
+  if (!isSiteAdmin && !isOwner && !isAdmin) {
+    throw new Error("User is not authorized to delete this event");
+  }
+  event.isDeleted = true;
+  await event.save();
+  return event;
 }

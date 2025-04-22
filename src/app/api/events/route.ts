@@ -15,13 +15,14 @@ export async function POST(req: NextRequest) {
     const userId = session.user.id;
     const role = session.user.role as UserRole;
 
-    const { organization_id, description, location, event_date } =
+    const { organization_id, title, description, location, event_date } =
       await req.json();
 
     const newEvent = await createEvent({
       userId,
       role,
-      organizationId: organization_id,
+      organizationId: "680700e57d0f9760fd3645ec",
+      title,
       description,
       location,
       event_date,
@@ -43,7 +44,8 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const organizationId = searchParams.get("organizationId");
+    // const organizationId = searchParams.get("organizationId");
+    const organizationId = "680700e57d0f9760fd3645ec";
 
     if (!organizationId) {
       return NextResponse.json(

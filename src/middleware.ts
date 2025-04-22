@@ -5,14 +5,20 @@ import { UserRole } from "./app/models/user.schema";
 
 export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
-  const token = await getToken({ req });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  // 관리자 전용 경로 필터링
-  // it is for CMNY management only
-  // later it will be changed for event control website
+  // /admin 경로는 ADMIN만 접근 가능
   if (url.pathname.startsWith("/admin")) {
     if (!token || token.role !== UserRole.ADMIN) {
-      url.pathname = "/"; // 권한 없으면 홈으로 리디렉트
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // /account 경로는 로그인된 유저만 접근 가능
+  if (url.pathname.startsWith("/account")) {
+    if (!token || !token.email) {
+      url.pathname = "/";
       return NextResponse.redirect(url);
     }
   }

@@ -1,4 +1,4 @@
-import { findEventById, updateEvent } from "@/app/services/event";
+import { deleteEvent, findEventById, updateEvent } from "@/app/services/event";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/route";
@@ -48,6 +48,34 @@ export async function PATCH(
     );
   } catch (error: any) {
     console.error("Error updating event:", error);
+    return NextResponse.json({ message: error.message }, { status: 400 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    const role = session.user.role as UserRole;
+    const eventId = params.id;
+
+    // Implement the delete logic here
+    await deleteEvent({
+      eventId,
+      userId,
+      role,
+    });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error: any) {
+    console.error("Error deleting event:", error);
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
 }
