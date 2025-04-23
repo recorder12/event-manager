@@ -38,23 +38,27 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 --- Plans ---
 
 1. Register and Login
-   [O] Register API
-   [O] Approve email API
-   [O] Login API
-   [ ] Register Pop Up Page
-   [ ] Login Pop Up Page
-   [ ] Edit Profile API
-   [ ] Edit Profile Page
-   [ ] Log Out
+
+   - [O] Register API
+   - [O] Approve email API
+   - [O] Login API
+   - [O] Register Pop Up Page
+   - [O] Login Pop Up Page
+   - [O] Edit Profile API
+   - [O] Edit Profile Page
+   - [O] Log Out
 
 2. Event Create Page
-   [ ] Set to approve access for only admin
-   [ ] Page
-   [ ] API -> create event, edit event
+
+   - [O] Set to approve access for only admin
+   - [O] Admin Page
+   - [O] API -> create event, edit event
 
 3. Event Page
-   [ ] list of parts
-   [ ] add or remove person to part
-   [ ] edit event for participants
 
-4.
+   - [O] list of parts
+   - [ ] add or remove person to part
+   - [ ] edit event for participants
+
+4. Email reminder
+   - [ ] send email when new event is opend to members
