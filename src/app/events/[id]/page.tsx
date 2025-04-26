@@ -21,7 +21,6 @@ export default function EventPage() {
 
   const event = data.data;
   const eventDate = toZonedTime(event.event_date, "America/New_York");
-
   const userId = session?.user?.id;
 
   async function handleChoose(activityId: string, partId: string) {
@@ -59,7 +58,7 @@ export default function EventPage() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        alert(errorData.message || "Failed to choose part");
+        alert(errorData.message || "Failed to cancel part");
         return;
       }
 
@@ -71,20 +70,25 @@ export default function EventPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="border rounded-lg shadow-md p-6 mb-8 bg-white">
+    <div className="max-w-5xl mx-auto p-6">
+      {/* 메인 이벤트 정보 */}
+      <div className="border rounded-lg shadow-sm p-8 mb-10 bg-gray-50">
         <h1 className="text-4xl font-extrabold text-center mb-6">
           {event.title}
         </h1>
 
         <div className="flex flex-col sm:flex-row sm:justify-center sm:items-center sm:space-x-10 text-gray-600 text-md">
           <div className="flex items-center space-x-2 mb-2 sm:mb-0">
-            <span className="font-semibold">Date:</span>
+            <span role="img" aria-label="calendar">
+              📅
+            </span>
             <span>{format(eventDate, "yyyy-MM-dd HH:mm")}</span>
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="font-semibold">Location:</span>
+            <span role="img" aria-label="location">
+              📍
+            </span>
             <span>{event.location}</span>
           </div>
         </div>
@@ -96,20 +100,24 @@ export default function EventPage() {
         )}
       </div>
 
-      <div className="my-8 space-y-8">
+      {/* Activities */}
+      <div className="space-y-12">
         {event.activities.map((activity: any) => (
           <div
             key={activity._id}
-            className="border rounded p-4 space-y-4 mb-20"
+            className="border rounded-lg shadow-sm p-6 bg-gray-50"
           >
-            <div>
-              <h2 className="text-xl font-semibold">{activity.title}</h2>
-              {activity.description && (
-                <p className="text-gray-600">{activity.description}</p>
-              )}
-            </div>
+            <h2 className="text-2xl font-semibold text-center">
+              {activity.title}
+            </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activity.description && (
+              <p className="text-gray-600 text-center mt-2">
+                {activity.description}
+              </p>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               {activity.parts.map((part: any) => {
                 const userHasApplied = part.applicants.some(
                   (user: any) => (user?._id || user) === userId
@@ -118,12 +126,14 @@ export default function EventPage() {
                 return (
                   <div
                     key={part._id}
-                    className="border rounded p-2 flex flex-col justify-between"
+                    className="border rounded p-4 flex flex-col justify-between bg-white"
                   >
                     <div>
-                      <div className="font-semibold">{part.name}</div>
-                      {/* 신청된 사람 리스트 */}
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-3">
+                      <div className="font-semibold text-center text-lg">
+                        {part.name}
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
                         {Array.from({ length: part.limitation }).map(
                           (_, idx) => {
                             const user = part.applicants[idx];
