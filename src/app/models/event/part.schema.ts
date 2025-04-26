@@ -14,8 +14,8 @@ export const PartSchema = new Schema<Part>(
     order: { type: Number, required: true },
     name: { type: String, required: true },
     limitation: { type: Number, required: true },
-    applicants: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    participants: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    applicants: [{ type: Schema.Types.ObjectId, ref: "User", unique: true }],
+    participants: [{ type: Schema.Types.ObjectId, ref: "User", unique: true }],
   },
   { _id: true, timestamps: true, versionKey: false }
 );

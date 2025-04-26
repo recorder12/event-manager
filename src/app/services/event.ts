@@ -131,6 +131,13 @@ export async function findEventById({
     await dbConnect();
     const event = await Event.findById(id).populate({
       path: "activities",
+      populate: {
+        path: "parts",
+        populate: {
+          path: "applicants",
+          select: "first_name last_name", // 필요한 필드만 가져오기
+        },
+      },
     });
 
     if (!event) throw new Error("Event not found");
