@@ -72,10 +72,29 @@ export default function EventPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
-      <p className="text-gray-600">{format(eventDate, "yyyy-MM-dd HH:mm")}</p>
-      <p className="mt-2">{event.location}</p>
-      <p className="mt-4">{event.description}</p>
+      <div className="border rounded-lg shadow-md p-6 mb-8 bg-white">
+        <h1 className="text-4xl font-extrabold text-center mb-6">
+          {event.title}
+        </h1>
+
+        <div className="flex flex-col sm:flex-row sm:justify-center sm:items-center sm:space-x-10 text-gray-600 text-md">
+          <div className="flex items-center space-x-2 mb-2 sm:mb-0">
+            <span className="font-semibold">Date:</span>
+            <span>{format(eventDate, "yyyy-MM-dd HH:mm")}</span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <span className="font-semibold">Location:</span>
+            <span>{event.location}</span>
+          </div>
+        </div>
+
+        {event.description && (
+          <p className="mt-6 text-gray-700 text-center max-w-3xl mx-auto leading-relaxed">
+            {event.description}
+          </p>
+        )}
+      </div>
 
       <div className="my-8 space-y-8">
         {event.activities.map((activity: any) => (
