@@ -5,6 +5,7 @@ import {
   updatePartInActivity,
   deletePartFromActivity,
 } from "@/app/services/part";
+import { UserRole } from "@/app/models/user.schema";
 
 export async function PATCH(
   req: NextRequest,
@@ -16,11 +17,17 @@ export async function PATCH(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+    const role = session.user.role as UserRole;
+
     const body = await req.json();
     const { activityId, name, limitation } = body;
 
+    console.log(name, limitation, params.id);
+
     const updatedPart = await updatePartInActivity({
-      userId: session.user.id,
+      userId,
+      role,
       activityId,
       partId: params.id,
       name,
@@ -47,10 +54,25 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { activityId } = await req.json();
+    const userId = session.user.id;
+    const role = session.user.role as UserRole;
+
+    const { searchParams } = new URL(req.url); // ★ 수정
+    const activityId = searchParams.get("activityId");
+
+    if (!activityId) {
+      return NextResponse.json(
+        { message: "Missing activityId" },
+        { status: 400 }
+      );
+    }
+
+    console.log("Deleting part with ID:", params.id);
+    console.log("Activity ID:", activityId);
 
     await deletePartFromActivity({
-      userId: session.user.id,
+      role,
+      userId,
       activityId,
       partId: params.id,
     });

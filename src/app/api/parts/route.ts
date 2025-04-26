@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { addPartToActivity } from "@/app/services/part";
+import { UserRole } from "@/app/models/user.schema";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,10 +11,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { activityId, name, limitation } = await req.json();
+    const userId = session.user.id;
+    const role = session.user.role as UserRole;
+
+    const { order, activityId, name, limitation } = await req.json();
 
     const updatedActivity = await addPartToActivity({
-      userId: session.user.id,
+      userId,
+      role,
+      order,
       activityId,
       name,
       limitation,
@@ -28,3 +34,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
 }
+
+// activity Card has title, description, and parts
+// parts: [ { name, limitation } ]
+
+// if create confirm -> create activity -> get activityId -> create parts
+
+// if edit confirm -> update activity -> check if parts are updated, update parts
+
+// if delete confirm -> delete activity -> delete parts

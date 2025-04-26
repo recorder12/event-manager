@@ -14,8 +14,7 @@ export async function POST(req: NextRequest) {
     const userId = session.user.id;
     const role = session.user.role as UserRole;
 
-    const { eventId, title, description, start_time, end_time } =
-      await req.json();
+    const { eventId, title, description } = await req.json();
 
     const activity = await createActivity({
       userId,
@@ -23,8 +22,6 @@ export async function POST(req: NextRequest) {
       eventId,
       title,
       description,
-      start_time,
-      end_time,
     });
 
     return NextResponse.json(
@@ -36,3 +33,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
 }
+
+// add activity
+// edit activity
+// delete activity
+
+// add part
+// edit part
+// delete part

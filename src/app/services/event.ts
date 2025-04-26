@@ -184,10 +184,7 @@ export async function updateEvent({
     throw new Error("User is not authorized to edit this event");
   }
 
-  console.log("title", title);
-
   if (title) {
-    console.log("title added");
     event.title = title;
   }
   if (description) event.description = description;
@@ -202,11 +199,8 @@ export async function updateEvent({
   if (type) event.type = type as any;
   if (visibility) event.visibility = visibility as any;
 
-  console.log(event);
-
   await event.save();
 
-  console.log("afer save, event", event);
   return event;
 }
 

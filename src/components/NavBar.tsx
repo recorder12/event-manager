@@ -11,9 +11,6 @@ export default function NavBar() {
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const closeMenu = () => setMenuOpen(false);
 
-  console.log("Session data:", session);
-  console.log("Menu open state:", menuOpen);
-
   return (
     <nav className="flex justify-between items-center px-6 py-4 bg-white shadow relative z-50">
       {/* Left: Logo */}

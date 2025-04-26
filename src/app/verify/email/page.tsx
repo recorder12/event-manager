@@ -26,7 +26,6 @@ export default function EmailVerifyPage() {
           setStatus("success");
         } else {
           const result = await res.json();
-          console.log(result);
           setErrorMessage(result.error || "Verification failed.");
           setStatus("error");
         }

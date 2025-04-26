@@ -1,8 +1,11 @@
 import dbConnect from "@/lib/mongodb";
 import { Activity, Event } from "@/app/models/event";
 import { Organization } from "@/app/models/organization.schema";
+import { UserRole } from "../models/user.schema";
 
 type AddPartInput = {
+  order: number;
+  role: UserRole;
   userId: string;
   activityId: string;
   name: string;
@@ -12,6 +15,7 @@ type AddPartInput = {
 type UpdatePartInput = {
   userId: string;
   activityId: string;
+  role: UserRole;
   partId: string;
   name?: string;
   limitation?: number;
@@ -19,11 +23,14 @@ type UpdatePartInput = {
 
 type DeletePartInput = {
   userId: string;
+  role: UserRole;
   activityId: string;
   partId: string;
 };
 
 export async function addPartToActivity({
+  order,
+  role,
   userId,
   activityId,
   name,
@@ -40,15 +47,17 @@ export async function addPartToActivity({
   const organization = await Organization.findById(event.organization);
   if (!organization) throw new Error("Organization not found");
 
+  const isSiteAdmin = role === UserRole.ADMIN;
   const isOwner = organization.owner.toString() === userId;
   const isAdmin = organization.members.some(
     (member) => member.user.toString() === userId && member.role === "ADMIN"
   );
-  if (!isOwner && !isAdmin) {
+  if (!isSiteAdmin && !isOwner && !isAdmin) {
     throw new Error("User is not authorized to add part");
   }
 
   activity.parts.push({
+    order,
     name,
     limitation,
     applicants: [],
@@ -61,6 +70,7 @@ export async function addPartToActivity({
 
 export async function updatePartInActivity({
   userId,
+  role,
   activityId,
   partId,
   name,
@@ -77,12 +87,13 @@ export async function updatePartInActivity({
   const organization = await Organization.findById(event.organization);
   if (!organization) throw new Error("Organization not found");
 
+  const isSiteAdmin = role === UserRole.ADMIN;
   const isOwner = organization.owner.toString() === userId;
   const isAdmin = organization.members.some(
     (member) => member.user.toString() === userId && member.role === "ADMIN"
   );
-  if (!isOwner && !isAdmin) {
-    throw new Error("User is not authorized to update part");
+  if (!isSiteAdmin && !isOwner && !isAdmin) {
+    throw new Error("User is not authorized to add part");
   }
 
   const part = activity.parts.find(
@@ -99,6 +110,7 @@ export async function updatePartInActivity({
 
 export async function deletePartFromActivity({
   userId,
+  role,
   activityId,
   partId,
 }: DeletePartInput): Promise<void> {
@@ -113,12 +125,13 @@ export async function deletePartFromActivity({
   const organization = await Organization.findById(event.organization);
   if (!organization) throw new Error("Organization not found");
 
+  const isSiteAdmin = role === UserRole.ADMIN;
   const isOwner = organization.owner.toString() === userId;
   const isAdmin = organization.members.some(
     (member) => member.user.toString() === userId && member.role === "ADMIN"
   );
-  if (!isOwner && !isAdmin) {
-    throw new Error("User is not authorized to delete part");
+  if (!isSiteAdmin && !isOwner && !isAdmin) {
+    throw new Error("User is not authorized to add part");
   }
 
   const partExists = activity.parts.some(

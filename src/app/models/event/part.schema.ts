@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 export interface Part {
   _id?: mongoose.Types.ObjectId;
+  order: number;
   name: string;
   limitation: number;
   applicants: mongoose.Types.ObjectId[];
@@ -10,10 +11,11 @@ export interface Part {
 
 export const PartSchema = new Schema<Part>(
   {
+    order: { type: Number, required: true },
     name: { type: String, required: true },
     limitation: { type: Number, required: true },
     applicants: [{ type: Schema.Types.ObjectId, ref: "User" }],
     participants: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
-  { _id: true, timestamps: false }
+  { _id: true, timestamps: true, versionKey: false }
 );

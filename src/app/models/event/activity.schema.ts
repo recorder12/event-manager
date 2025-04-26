@@ -19,7 +19,7 @@ const ActivitySchema = new Schema<ActivityDocument>(
     end_time: { type: Date },
     parts: [PartSchema],
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 export const Activity: Model<ActivityDocument> =
