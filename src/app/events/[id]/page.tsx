@@ -73,8 +73,11 @@ export default function EventPage() {
     <div className="max-w-5xl mx-auto p-6">
       {/* 메인 이벤트 정보 */}
       <div className="border rounded-lg shadow-sm p-8 mb-10 bg-gray-50">
-        <h1 className="text-4xl font-extrabold text-center mb-6">
+        <h1 className="text-4xl font-extrabold text-center mb-4">
           {event.title}
+          {event.is_closed && (
+            <span className="text-red-500 text-xl ml-4">(Event Closed)</span>
+          )}
         </h1>
 
         <div className="flex flex-col sm:flex-row sm:justify-center sm:items-center sm:space-x-10 text-gray-600 text-md">
@@ -122,6 +125,8 @@ export default function EventPage() {
                 const userHasApplied = part.applicants.some(
                   (user: any) => (user?._id || user) === userId
                 );
+
+                const partIsFull = part.applicants.length >= part.limitation;
 
                 return (
                   <div
@@ -171,14 +176,24 @@ export default function EventPage() {
                         {userHasApplied ? (
                           <button
                             onClick={() => handleCancel(activity._id, part._id)}
-                            className="w-full bg-red-500 hover:bg-red-600 text-white py-1 rounded"
+                            className={`w-full py-1 rounded ${
+                              event.is_closed
+                                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                                : "bg-red-500 hover:bg-red-600 text-white"
+                            }`}
+                            disabled={event.is_closed}
                           >
                             Cancel
                           </button>
                         ) : (
                           <button
                             onClick={() => handleChoose(activity._id, part._id)}
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-1 rounded"
+                            className={`w-full py-1 rounded ${
+                              event.is_closed || partIsFull
+                                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                                : "bg-blue-500 hover:bg-blue-600 text-white"
+                            }`}
+                            disabled={event.is_closed || partIsFull}
                           >
                             Choose
                           </button>
