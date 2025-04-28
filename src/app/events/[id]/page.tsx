@@ -70,17 +70,19 @@ export default function EventPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="w-full max-w-5xl mx-auto p-6">
       {/* 메인 이벤트 정보 */}
       <div className="border rounded-lg shadow-sm p-8 mb-10 bg-gray-50">
-        <h1 className="text-4xl font-extrabold text-center mb-4">
+        <h1 className="text-2xl md:text-4xl font-bold text-center mb-4">
           {event.title}
+        </h1>
+        <h1 className="text-xl md:text-2xl font-bold text-center mb-4">
           {event.is_closed && (
-            <span className="text-red-500 text-xl ml-4">(Event Closed)</span>
+            <span className="text-red-500 ml-4">(Event Closed)</span>
           )}
         </h1>
 
-        <div className="flex flex-col sm:flex-row sm:justify-center sm:items-center sm:space-x-10 text-gray-600 text-md">
+        <div className="flex flex-col sm:flex-row justify-center items-center sm:space-x-10 text-gray-600 text-sm md:text-md">
           <div className="flex items-center space-x-2 mb-2 sm:mb-0">
             <span role="img" aria-label="calendar">
               📅
@@ -97,7 +99,7 @@ export default function EventPage() {
         </div>
 
         {event.description && (
-          <p className="mt-6 text-gray-700 text-center max-w-3xl mx-auto leading-relaxed">
+          <p className="mt-6 text-gray-700 text-left max-w-3xl mx-auto leading-relaxed text-sm md:text-md">
             {event.description}
           </p>
         )}

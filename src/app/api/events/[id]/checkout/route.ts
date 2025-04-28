@@ -16,11 +16,13 @@ export async function POST(
 
     const userId = session.user.id;
     const role = session.user.role as UserRole;
+    const { parts } = await req.json();
 
     const result = await confirmParticipants({
       userId,
       role,
       eventId: params.id,
+      parts,
     });
 
     return NextResponse.json({ success: true, data: result }, { status: 200 });

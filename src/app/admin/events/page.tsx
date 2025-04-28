@@ -35,12 +35,22 @@ export default function AdminEventListPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event: any) => (
-              <EventPreviewCard
-                id={event._id}
-                title={event.title}
-                location={event.location}
-                event_date={event.event_date}
-              />
+              <div className="flex flex-col space-y-2" key={event._id}>
+                <EventPreviewCard
+                  id={event._id}
+                  title={event.title}
+                  location={event.location}
+                  event_date={event.event_date}
+                />
+                {event.is_closed && (
+                  <Link
+                    href={`/admin/events/${event._id}/checkout`}
+                    className="text-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                  >
+                    Check Out
+                  </Link>
+                )}
+              </div>
             ))}
           </div>
         )}

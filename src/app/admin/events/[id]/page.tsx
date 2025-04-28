@@ -216,15 +216,17 @@ export default function AdminEventDetailPage() {
           className="w-full border px-3 py-2 rounded"
           placeholder="Location"
         />
-        <button
-          onClick={handleEditEvent}
-          disabled={!isModified || isSaving}
-          className={`mt-2 px-4 py-2 rounded text-white ${
-            isModified ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400"
-          }`}
-        >
-          {isSaving ? "Saving..." : "Edit"}
-        </button>
+        <div className="flex justify-end">
+          <button
+            onClick={handleEditEvent}
+            disabled={!isModified || isSaving}
+            className={`mt-2 px-4 py-2 rounded text-white ${
+              isModified ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400"
+            }`}
+          >
+            {isSaving ? "Saving..." : "Edit"}
+          </button>
+        </div>
       </div>
 
       <hr className="my-6" />

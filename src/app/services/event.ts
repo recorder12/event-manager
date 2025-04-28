@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import dbConnect from "@/lib/mongodb";
+import mongoose from "mongoose";
 import {
   Activity,
   Event,
@@ -129,16 +130,25 @@ export async function findEventById({
 }: GetEventInput): Promise<EventDocument> {
   try {
     await dbConnect();
-    const event = await Event.findById(id).populate({
-      path: "activities",
-      populate: {
-        path: "parts",
+    const event = await Event.findById(id)
+      .populate({
+        path: "activities",
         populate: {
-          path: "applicants",
-          select: "first_name last_name", // 필요한 필드만 가져오기
+          path: "parts",
+          populate: {
+            path: "applicants",
+            select: "first_name last_name",
+          },
         },
-      },
-    });
+      })
+      .populate({
+        path: "confirmed_participants",
+        select: "first_name last_name",
+      })
+      .populate({
+        path: "absent_applicants",
+        select: "first_name last_name",
+      });
 
     if (!event) throw new Error("Event not found");
 
@@ -215,14 +225,26 @@ export async function confirmParticipants({
   userId,
   role,
   eventId,
+  parts,
 }: {
   userId: string;
   role: UserRole;
   eventId: string;
+  parts: { partId: string; participants: string[] }[];
 }) {
   await dbConnect();
 
-  const event = await Event.findById(eventId);
+  const event = await Event.findById(eventId).populate({
+    path: "activities",
+    populate: {
+      path: "parts",
+      populate: {
+        path: "applicants",
+        select: "_id",
+      },
+    },
+  });
+
   if (!event) throw new Error("Event not found");
 
   const organization = await Organization.findById(event.organization);
@@ -233,64 +255,80 @@ export async function confirmParticipants({
   const isAdmin = organization.members.some(
     (m) => m.user.toString() === userId && m.role === "ADMIN"
   );
+
   if (!isSiteAdmin && !isOwner && !isAdmin) {
     throw new Error("Unauthorized");
   }
 
-  const activities = await Activity.find({ event: eventId }).lean();
+  if (!event.activities) throw new Error("No activities found");
 
-  const appliedUserIds = new Set<string>();
-  const attendedUserIds = new Set<string>();
-  const notParticipatedUsers: { event: any; date: Date; userId: string }[] = [];
+  const allConfirmedIds = new Set<string>();
+  const allAppliedIds = new Set<string>();
+  const allApplicants = new Map<string, string>(); // userId -> partId
 
-  for (const activity of activities) {
+  for (const activity of event.activities as any[]) {
     for (const part of activity.parts) {
-      part.applicants.forEach((id) => {
-        appliedUserIds.add(id.toString());
-      });
-      part.participants.forEach((id) => {
-        attendedUserIds.add(id.toString());
+      const matching = parts.find((p) => p.partId === part._id.toString());
+      if (matching) {
+        part.participants = matching.participants.map(
+          (id) => new mongoose.Types.ObjectId(id)
+        );
+      }
+
+      // applicants 기록
+      part.applicants.forEach((applicant: any) => {
+        allAppliedIds.add(applicant._id.toString());
+        allApplicants.set(applicant._id.toString(), part._id.toString());
       });
 
-      part.applicants.forEach((id) => {
-        if (!part.participants.find((p) => p.toString() === id.toString())) {
-          notParticipatedUsers.push({
-            userId: id.toString(),
-            event: event._id,
-            date: event.event_date,
-          });
-        }
-      });
+      if (matching) {
+        matching.participants.forEach((pid) => {
+          allConfirmedIds.add(pid);
+        });
+      }
     }
   }
 
-  const memberIds = organization.members.map((m) => m.user.toString());
-  const notAppliedUsers = memberIds.filter((id) => !appliedUserIds.has(id));
+  await event.save();
 
-  // User 모델 업데이트
-  for (const userId of notAppliedUsers) {
-    await User.findByIdAndUpdate(userId, {
+  // 이제 사용자 업데이트
+  // const memberIds = organization.members.map((m) => m.user.toString()); // now just for every users
+  const users = await User.find();
+
+  const memberIds = users.map((m) => m._id.toString());
+  const notAppliedUsers = memberIds.filter((id) => !allAppliedIds.has(id));
+  const absentApplicants = Array.from(allAppliedIds).filter(
+    (id) => !allConfirmedIds.has(id)
+  );
+
+  console.log("memberIds:", memberIds);
+  console.log("notAppliedUsers:", notAppliedUsers);
+  console.log("absentApplicants", absentApplicants);
+
+  for (const uid of notAppliedUsers) {
+    await User.findByIdAndUpdate(uid, {
       $push: { not_applied: { event: event._id, date: event.event_date } },
       $inc: { not_applied_count: 1 },
     });
   }
 
-  for (const miss of notParticipatedUsers) {
-    await User.findByIdAndUpdate(miss.userId, {
-      $push: { not_participated: { event: miss.event, date: miss.date } },
+  for (const uid of absentApplicants) {
+    await User.findByIdAndUpdate(uid, {
+      $push: { not_participated: { event: event._id, date: event.event_date } },
       $inc: { not_participated_count: 1 },
     });
   }
 
-  // Event에 참석자/결석자 저장
-  event.confirmed_participants = Array.from(attendedUserIds).map(
+  event.confirmed_participants = Array.from(allConfirmedIds).map(
     (id) => new mongoose.Types.ObjectId(id)
   );
-  event.absent_applicants = notParticipatedUsers.map(
-    (miss) => new mongoose.Types.ObjectId(miss.userId)
+  event.absent_applicants = absentApplicants.map(
+    (id) => new mongoose.Types.ObjectId(id)
   );
   event.is_participants_confirmed = true;
   await event.save();
+
+  console.log(event);
 
   return {
     confirmed: event.confirmed_participants.length,
