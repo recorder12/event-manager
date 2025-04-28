@@ -48,16 +48,20 @@ export async function cancelApplication({
   activityId: string;
   partId: string;
 }) {
-  await dbConnect();
+  try {
+    await dbConnect();
 
-  const activity = await Activity.findById(activityId);
-  if (!activity) throw new Error("Activity not found");
+    const activity = await Activity.findById(activityId);
+    if (!activity) throw new Error("Activity not found");
 
-  const part = activity.parts.find((p) => p._id?.toString() === partId);
-  if (!part) throw new Error("Part not found");
+    const part = activity.parts.find((p) => p._id?.toString() === partId);
+    if (!part) throw new Error("Part not found");
 
-  part.applicants = part.applicants.filter((id) => id.toString() !== userId);
+    part.applicants = part.applicants.filter((id) => id.toString() !== userId);
 
-  await activity.save();
-  return part;
+    await activity.save();
+    return part;
+  } catch (error) {
+    throw error;
+  }
 }

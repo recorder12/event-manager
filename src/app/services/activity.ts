@@ -38,37 +38,41 @@ export async function createActivity({
   start_time,
   end_time,
 }: CreateActivityInput): Promise<ActivityDocument> {
-  await dbConnect();
+  try {
+    await dbConnect();
 
-  const event = await Event.findById(eventId);
-  if (!event) throw new Error("Event not found");
+    const event = await Event.findById(eventId);
+    if (!event) throw new Error("Event not found");
 
-  const organization = await Organization.findById(event.organization);
-  if (!organization) throw new Error("Organization not found");
+    const organization = await Organization.findById(event.organization);
+    if (!organization) throw new Error("Organization not found");
 
-  const isSiteAdmin = role === UserRole.ADMIN;
-  const isOwner = organization.owner.toString() === userId;
-  const isAdmin = organization.members.some(
-    (member) => member.user.toString() === userId && member.role === "ADMIN"
-  );
-  if (!isSiteAdmin! && isOwner && !isAdmin) {
-    throw new Error("User is not authorized to add activity");
+    const isSiteAdmin = role === UserRole.ADMIN;
+    const isOwner = organization.owner.toString() === userId;
+    const isAdmin = organization.members.some(
+      (member) => member.user.toString() === userId && member.role === "ADMIN"
+    );
+    if (!isSiteAdmin! && isOwner && !isAdmin) {
+      throw new Error("User is not authorized to add activity");
+    }
+
+    const newActivity = (await Activity.create({
+      event: eventId,
+      title,
+      description,
+      start_time,
+      end_time,
+      parts: [],
+    })) as ActivityDocument;
+
+    event.activities = event.activities || []; // safety check
+    event.activities.push(newActivity.id);
+    await event.save();
+
+    return newActivity;
+  } catch (error) {
+    throw error;
   }
-
-  const newActivity = (await Activity.create({
-    event: eventId,
-    title,
-    description,
-    start_time,
-    end_time,
-    parts: [],
-  })) as ActivityDocument;
-
-  event.activities = event.activities || []; // safety check
-  event.activities.push(newActivity.id);
-  await event.save();
-
-  return newActivity;
 }
 
 export async function updateActivity({
@@ -80,33 +84,37 @@ export async function updateActivity({
   start_time,
   end_time,
 }: UpdateActivityInput): Promise<ActivityDocument> {
-  await dbConnect();
+  try {
+    await dbConnect();
 
-  const activity = await Activity.findById(activityId);
-  if (!activity) throw new Error("Activity not found");
+    const activity = await Activity.findById(activityId);
+    if (!activity) throw new Error("Activity not found");
 
-  const event = await Event.findById(activity.event);
-  if (!event) throw new Error("Event not found");
+    const event = await Event.findById(activity.event);
+    if (!event) throw new Error("Event not found");
 
-  const organization = await Organization.findById(event.organization);
-  if (!organization) throw new Error("Organization not found");
+    const organization = await Organization.findById(event.organization);
+    if (!organization) throw new Error("Organization not found");
 
-  const isSiteAdmin = role === UserRole.ADMIN;
-  const isOwner = organization.owner.toString() === userId;
-  const isAdmin = organization.members.some(
-    (member) => member.user.toString() === userId && member.role === "ADMIN"
-  );
-  if (!isSiteAdmin && !isOwner && !isAdmin) {
-    throw new Error("User is not authorized to update activity");
+    const isSiteAdmin = role === UserRole.ADMIN;
+    const isOwner = organization.owner.toString() === userId;
+    const isAdmin = organization.members.some(
+      (member) => member.user.toString() === userId && member.role === "ADMIN"
+    );
+    if (!isSiteAdmin && !isOwner && !isAdmin) {
+      throw new Error("User is not authorized to update activity");
+    }
+
+    if (title !== undefined) activity.title = title;
+    if (description !== undefined) activity.description = description;
+    if (start_time !== undefined) activity.start_time = start_time;
+    if (end_time !== undefined) activity.end_time = end_time;
+
+    await activity.save();
+    return activity;
+  } catch (error) {
+    throw error;
   }
-
-  if (title !== undefined) activity.title = title;
-  if (description !== undefined) activity.description = description;
-  if (start_time !== undefined) activity.start_time = start_time;
-  if (end_time !== undefined) activity.end_time = end_time;
-
-  await activity.save();
-  return activity;
 }
 
 export async function deleteActivity({
@@ -114,31 +122,35 @@ export async function deleteActivity({
   role,
   activityId,
 }: DeleteActivityInput): Promise<void> {
-  await dbConnect();
+  try {
+    await dbConnect();
 
-  const activity = await Activity.findById(activityId);
-  if (!activity) throw new Error("Activity not found");
+    const activity = await Activity.findById(activityId);
+    if (!activity) throw new Error("Activity not found");
 
-  const event = await Event.findById(activity.event);
-  if (!event) throw new Error("Event not found");
+    const event = await Event.findById(activity.event);
+    if (!event) throw new Error("Event not found");
 
-  const organization = await Organization.findById(event.organization);
-  if (!organization) throw new Error("Organization not found");
+    const organization = await Organization.findById(event.organization);
+    if (!organization) throw new Error("Organization not found");
 
-  const isSiteAdmin = role === UserRole.ADMIN;
-  const isOwner = organization.owner.toString() === userId;
-  const isAdmin = organization.members.some(
-    (member) => member.user.toString() === userId && member.role === "ADMIN"
-  );
-  if (!isSiteAdmin && !isOwner && !isAdmin) {
-    throw new Error("User is not authorized to delete activity");
+    const isSiteAdmin = role === UserRole.ADMIN;
+    const isOwner = organization.owner.toString() === userId;
+    const isAdmin = organization.members.some(
+      (member) => member.user.toString() === userId && member.role === "ADMIN"
+    );
+    if (!isSiteAdmin && !isOwner && !isAdmin) {
+      throw new Error("User is not authorized to delete activity");
+    }
+
+    await activity.deleteOne();
+
+    // Event.activities에서도 제거
+    event.activities = event.activities?.filter(
+      (id) => id.toString() !== activity.id.toString()
+    );
+    await event.save();
+  } catch (error) {
+    throw error;
   }
-
-  await activity.deleteOne();
-
-  // Event.activities에서도 제거
-  event.activities = event.activities?.filter(
-    (id) => id.toString() !== activity.id.toString()
-  );
-  await event.save();
 }

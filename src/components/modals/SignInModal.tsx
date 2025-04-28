@@ -41,6 +41,31 @@ export default function SignInModal() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!email) {
+      alert("Please enter your email first.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/password/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        alert("Password reset email sent. Please check your inbox.");
+      } else {
+        const errorData = await res.json();
+        alert(errorData.message || "Failed to send reset email.");
+      }
+    } catch (error) {
+      console.error("Reset password error:", error);
+      alert("An error occurred while sending reset email.");
+    }
+  };
+
   if (!open) return null;
 
   return (
@@ -77,6 +102,14 @@ export default function SignInModal() {
           className="absolute top-2 right-3 text-gray-400 hover:text-gray-600 text-xl"
         >
           ×
+        </button>
+        {/* Forgot Password 추가 */}
+        <button
+          type="button"
+          onClick={handleResetPassword}
+          className="w-full text-sm text-blue-500 hover:underline mt-2"
+        >
+          Forgot Password?
         </button>
       </div>
     </div>

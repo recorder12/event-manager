@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, user_type } = await req.json();
+    const { email } = await req.json();
     await resetPassword({
       email,
     });

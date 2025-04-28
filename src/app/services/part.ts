@@ -36,36 +36,40 @@ export async function addPartToActivity({
   name,
   limitation,
 }: AddPartInput) {
-  await dbConnect();
+  try {
+    await dbConnect();
 
-  const activity = await Activity.findById(activityId);
-  if (!activity) throw new Error("Activity not found");
+    const activity = await Activity.findById(activityId);
+    if (!activity) throw new Error("Activity not found");
 
-  const event = await Event.findById(activity.event);
-  if (!event) throw new Error("Event not found");
+    const event = await Event.findById(activity.event);
+    if (!event) throw new Error("Event not found");
 
-  const organization = await Organization.findById(event.organization);
-  if (!organization) throw new Error("Organization not found");
+    const organization = await Organization.findById(event.organization);
+    if (!organization) throw new Error("Organization not found");
 
-  const isSiteAdmin = role === UserRole.ADMIN;
-  const isOwner = organization.owner.toString() === userId;
-  const isAdmin = organization.members.some(
-    (member) => member.user.toString() === userId && member.role === "ADMIN"
-  );
-  if (!isSiteAdmin && !isOwner && !isAdmin) {
-    throw new Error("User is not authorized to add part");
+    const isSiteAdmin = role === UserRole.ADMIN;
+    const isOwner = organization.owner.toString() === userId;
+    const isAdmin = organization.members.some(
+      (member) => member.user.toString() === userId && member.role === "ADMIN"
+    );
+    if (!isSiteAdmin && !isOwner && !isAdmin) {
+      throw new Error("User is not authorized to add part");
+    }
+
+    activity.parts.push({
+      order,
+      name,
+      limitation,
+      applicants: [],
+      participants: [],
+    });
+
+    await activity.save();
+    return activity;
+  } catch (error) {
+    throw error;
   }
-
-  activity.parts.push({
-    order,
-    name,
-    limitation,
-    applicants: [],
-    participants: [],
-  });
-
-  await activity.save();
-  return activity;
 }
 
 export async function updatePartInActivity({
@@ -76,36 +80,40 @@ export async function updatePartInActivity({
   name,
   limitation,
 }: UpdatePartInput) {
-  await dbConnect();
+  try {
+    await dbConnect();
 
-  const activity = await Activity.findById(activityId);
-  if (!activity) throw new Error("Activity not found");
+    const activity = await Activity.findById(activityId);
+    if (!activity) throw new Error("Activity not found");
 
-  const event = await Event.findById(activity.event);
-  if (!event) throw new Error("Event not found");
+    const event = await Event.findById(activity.event);
+    if (!event) throw new Error("Event not found");
 
-  const organization = await Organization.findById(event.organization);
-  if (!organization) throw new Error("Organization not found");
+    const organization = await Organization.findById(event.organization);
+    if (!organization) throw new Error("Organization not found");
 
-  const isSiteAdmin = role === UserRole.ADMIN;
-  const isOwner = organization.owner.toString() === userId;
-  const isAdmin = organization.members.some(
-    (member) => member.user.toString() === userId && member.role === "ADMIN"
-  );
-  if (!isSiteAdmin && !isOwner && !isAdmin) {
-    throw new Error("User is not authorized to add part");
+    const isSiteAdmin = role === UserRole.ADMIN;
+    const isOwner = organization.owner.toString() === userId;
+    const isAdmin = organization.members.some(
+      (member) => member.user.toString() === userId && member.role === "ADMIN"
+    );
+    if (!isSiteAdmin && !isOwner && !isAdmin) {
+      throw new Error("User is not authorized to add part");
+    }
+
+    const part = activity.parts.find(
+      (p) => p._id?.toString() === partId.toString()
+    );
+    if (!part) throw new Error("Part not found");
+
+    if (name !== undefined) part.name = name;
+    if (limitation !== undefined) part.limitation = limitation;
+
+    await activity.save();
+    return part;
+  } catch (error) {
+    throw error;
   }
-
-  const part = activity.parts.find(
-    (p) => p._id?.toString() === partId.toString()
-  );
-  if (!part) throw new Error("Part not found");
-
-  if (name !== undefined) part.name = name;
-  if (limitation !== undefined) part.limitation = limitation;
-
-  await activity.save();
-  return part;
 }
 
 export async function deletePartFromActivity({
@@ -114,34 +122,38 @@ export async function deletePartFromActivity({
   activityId,
   partId,
 }: DeletePartInput): Promise<void> {
-  await dbConnect();
+  try {
+    await dbConnect();
 
-  const activity = await Activity.findById(activityId);
-  if (!activity) throw new Error("Activity not found");
+    const activity = await Activity.findById(activityId);
+    if (!activity) throw new Error("Activity not found");
 
-  const event = await Event.findById(activity.event);
-  if (!event) throw new Error("Event not found");
+    const event = await Event.findById(activity.event);
+    if (!event) throw new Error("Event not found");
 
-  const organization = await Organization.findById(event.organization);
-  if (!organization) throw new Error("Organization not found");
+    const organization = await Organization.findById(event.organization);
+    if (!organization) throw new Error("Organization not found");
 
-  const isSiteAdmin = role === UserRole.ADMIN;
-  const isOwner = organization.owner.toString() === userId;
-  const isAdmin = organization.members.some(
-    (member) => member.user.toString() === userId && member.role === "ADMIN"
-  );
-  if (!isSiteAdmin && !isOwner && !isAdmin) {
-    throw new Error("User is not authorized to add part");
+    const isSiteAdmin = role === UserRole.ADMIN;
+    const isOwner = organization.owner.toString() === userId;
+    const isAdmin = organization.members.some(
+      (member) => member.user.toString() === userId && member.role === "ADMIN"
+    );
+    if (!isSiteAdmin && !isOwner && !isAdmin) {
+      throw new Error("User is not authorized to add part");
+    }
+
+    const partExists = activity.parts.some(
+      (p) => p._id?.toString() === partId.toString()
+    );
+    if (!partExists) throw new Error("Part not found");
+
+    activity.parts = activity.parts.filter(
+      (p) => p._id?.toString() !== partId.toString()
+    );
+
+    await activity.save();
+  } catch (error) {
+    throw error;
   }
-
-  const partExists = activity.parts.some(
-    (p) => p._id?.toString() === partId.toString()
-  );
-  if (!partExists) throw new Error("Part not found");
-
-  activity.parts = activity.parts.filter(
-    (p) => p._id?.toString() !== partId.toString()
-  );
-
-  await activity.save();
 }
