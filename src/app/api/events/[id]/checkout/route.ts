@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../../auth/[...nextauth]/route";
 import { confirmParticipants } from "@/app/services/event";
 import { UserRole } from "@/app/models/user.schema";
+import { authOptions } from "@/app/api/auth/authOptions";
 
 export async function POST(
   req: NextRequest,

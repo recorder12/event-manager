@@ -1,8 +1,8 @@
 // /api/me/profile/route.ts
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { editProfile, ProfileErrors } from "@/app/services/user";
+import { authOptions } from "@/app/api/auth/authOptions";
 
 export async function POST(req: NextRequest) {
   try {

@@ -1,8 +1,8 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+// import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { UserRole } from "@/app/models/user.schema";
 import { createOrganization } from "@/app/services/organization";
+// import { authOptions } from "../auth/authOptions";
 
 export async function POST(req: Request) {
   try {

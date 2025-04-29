@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
 import {
   updatePartInActivity,
   deletePartFromActivity,
 } from "@/app/services/part";
 import { UserRole } from "@/app/models/user.schema";
+import { authOptions } from "../../auth/authOptions";
 
 export async function PATCH(
   req: NextRequest,

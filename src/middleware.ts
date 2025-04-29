@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { UserRole } from "./app/models/user.schema";
 
 export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
@@ -9,7 +8,7 @@ export async function middleware(req: NextRequest) {
 
   // /admin 경로는 ADMIN만 접근 가능
   if (url.pathname.startsWith("/admin")) {
-    if (!token || token.role !== UserRole.ADMIN) {
+    if (!token || token.role !== "ADMIN") {
       url.pathname = "/";
       return NextResponse.redirect(url);
     }

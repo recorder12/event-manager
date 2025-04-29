@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function EmailVerifyPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
   const [status, setStatus] = useState<"loading" | "success" | "error">(
@@ -74,15 +74,17 @@ export default function EmailVerifyPage() {
               ❌ Verification Failed
             </h2>
             <p className="text-gray-700">{errorMessage}</p>
-            {/* <Link
-              href="/auth/login"
-              className="inline-block mt-2 text-blue-600 hover:underline"
-            >
-              Go to Login
-            </Link> */}
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function EmailVerifyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

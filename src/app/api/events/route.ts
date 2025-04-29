@@ -1,9 +1,9 @@
 // /app/api/events/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
 import { createEvent, findEventsByOrganization } from "@/app/services/event";
 import { UserRole } from "@/app/models/user.schema";
+import { authOptions } from "../auth/authOptions";
 
 export async function POST(req: NextRequest) {
   try {

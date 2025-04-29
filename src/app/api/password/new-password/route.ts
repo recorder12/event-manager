@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/route";
 import { setNewPassword, setNewPasswordErrors } from "@/app/services/user";
+import { authOptions } from "../../auth/authOptions";
 
 export async function POST(req: NextRequest) {
   try {
