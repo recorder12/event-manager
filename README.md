@@ -1,64 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Collegium Musicum New York Rehearsal Manager
 
-## Getting Started
+This is a web application built to manage rehearsals for **Collegium Musicum New York**, a community-based orchestra. It helps organize rehearsal events by allowing admins to share location, repertoire, and detailed musical information, while enabling members to select desired positions and confirm their attendance.
 
-First, run the development server:
+---
+
+## 🎯 Key Features
+
+- Admins can create and edit events (e.g., rehearsals or performances)
+- Members can view upcoming events and select desired parts
+- Tracks participant status (attending, absent, unconfirmed)
+- Profile management for users
+- Planned email reminders for new events (upcoming)
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org)
+- **Database**: MongoDB (via Mongoose)
+- **Authentication**: JWT-based auth
+- **Deployment**: [Vercel](https://vercel.com)
+- **Styling**: Tailwind CSS
+- **APIs**: REST (custom-built via Next.js API routes)
+
+---
+
+## 🚀 Getting Started (Local Development)
+
+To start the app locally:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
---- Plans ---
-
-1. Register and Login
-
-   - [O] Register API
-   - [O] Approve email API
-   - [O] Login API
-   - [O] Register Pop Up Page
-   - [O] Login Pop Up Page
-   - [O] Edit Profile API
-   - [O] Edit Profile Page
-   - [O] Log Out
-
-2. Event Create Page
-
-   - [O] Set to approve access for only admin
-   - [O] Admin Page
-   - [O] API -> create event, edit event
-
-3. Event Page
-
-   - [O] list of parts
-   - [ ] add or remove person to part
-   - [ ] edit event for participants
-
-4. Email reminder
-   - [ ] send email when new event is opend to members
