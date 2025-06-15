@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { EmailVerification } from "../models/verification.schema";
 import { User } from "../models/user.schema";
 import { sendVerificationEmail } from "../utils/email";
+import dbConnect from "@/lib/mongodb";
 
 export const VerificationErrors = {
   CODE_NOT_FOUND: "Verification code not found",
@@ -57,6 +58,8 @@ export async function createEmailVerification({
 
 export async function verifyEmail({ code }: VerifyEmailInput) {
   try {
+    await dbConnect();
+
     const verification = await EmailVerification.findOne({ code });
     if (!verification) {
       throw new Error("Verification code not found");
