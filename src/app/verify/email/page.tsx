@@ -60,10 +60,10 @@ function VerifyEmailContent() {
             </h2>
             <p className="text-gray-700">You can now log in to your account.</p>
             <Link
-              href="/auth/login"
+              href="/"
               className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded transition"
             >
-              Go to Login
+              Go to Home
             </Link>
           </div>
         )}
